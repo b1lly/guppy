@@ -1,0 +1,12 @@
+{
+	"name": "common",
+	"version": "0.0.1",
+
+	"js": "./javascript",
+	"templates": "./views",
+	"stylesheets": "/stylesheets",
+	"deps": [
+		"storm -v 1.0",
+	],
+	"remote": "github.com/b1lly/guppy.git"
+}
