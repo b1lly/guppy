@@ -50,10 +50,11 @@ func (v *Version) Set(version string) *Version {
 	return &Version{vers[0], vers[1], vers[2]}
 }
 
-var packages map[string][]*Package
+var packages = make(map[string][]*Package)
 
 func main() {
 	http.HandleFunc("/register", RegisterPkg)
+	http.HandleFunc("/get", GetPkg)
 	err := http.ListenAndServe(":13379", nil)
 	if err != nil {
 		log.Fatal("ListenAndServ: ", err)
@@ -96,44 +97,46 @@ func validatePkg(params url.Values) (*Package, error) {
 
 type ResponseMsg struct {
 	Msg      string
-	PkgError error
+	ErrorMsg string
 }
 
 func RegisterPkg(res http.ResponseWriter, req *http.Request) {
-	params := req.URL.Query()
-
-	pkg, err := validatePkg(params)
+	pkg, err := validatePkg(req.URL.Query())
 	if err != nil {
-		json, err := json.Marshal(ResponseMsg{"Could not register package", err})
+		json, err := json.Marshal(ResponseMsg{"Could not register package", err.Error()})
 		if err != nil {
 			log.Printf("Could not unmarshal package properly")
 			http.NotFound(res, req)
+			return
 		}
 
 		writeResponseJSON(res, json, 406)
+		return
 	}
 
-	json, err := json.Marshal(ResponseMsg{"Great success, package added to repo!", nil})
+	json, err := json.Marshal(ResponseMsg{"Great success, package added to repo!", ""})
 	if err != nil {
 		log.Printf("Could not unmarshal package properly")
 		http.NotFound(res, req)
+		return
 	}
 
 	packages[pkg.Name] = append(packages[pkg.Name], pkg)
 	writeResponseJSON(res, json, 200)
 }
 
-func GetPkg(req *http.Request, res http.ResponseWriter) {
+func GetPkg(res http.ResponseWriter, req *http.Request) {
 	params := req.URL.Query()
 	var name string
 
 	if name = params.Get("pkgname"); name == "" {
 		http.NotFound(res, req)
+		return
 	}
 
 	pkgs := packages[name]
 
-	if len(pkgs) > 1 {
+	if len(pkgs) >= 1 {
 		v := Version{}
 		v.Set(params.Get("version"))
 
@@ -145,10 +148,14 @@ func GetPkg(req *http.Request, res http.ResponseWriter) {
 				if err != nil {
 					log.Printf("Could not unmarshal package properly")
 					http.NotFound(res, req)
+					return
 				}
 
 				writeResponseJSON(res, json, 200)
 			}
 		}
+	} else {
+		http.NotFound(res, req)
+		return
 	}
 }
