@@ -63,7 +63,14 @@ func main() {
 	log.Printf("Listening on 1337...")
 }
 
-func writeResponseJSON(res http.ResponseWriter, json []byte, statusCode int) {
+func writeResponseJSON(res http.ResponseWriter, req *http.Request, msg interface{}, statusCode int) {
+	json, err := json.Marshal(msg)
+	if err != nil {
+		log.Printf("Could not unmarshal package properly")
+		http.NotFound(res, req)
+		return
+	}
+
 	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(statusCode)
 	res.Write(json)
@@ -103,59 +110,33 @@ type ResponseMsg struct {
 func RegisterPkg(res http.ResponseWriter, req *http.Request) {
 	pkg, err := validatePkg(req.URL.Query())
 	if err != nil {
-		json, err := json.Marshal(ResponseMsg{"Could not register package", err.Error()})
-		if err != nil {
-			log.Printf("Could not unmarshal package properly")
-			http.NotFound(res, req)
-			return
-		}
-
-		writeResponseJSON(res, json, 406)
-		return
-	}
-
-	json, err := json.Marshal(ResponseMsg{"Great success, package added to repo!", ""})
-	if err != nil {
-		log.Printf("Could not unmarshal package properly")
-		http.NotFound(res, req)
+		writeResponseJSON(res, req, ResponseMsg{"Could not register package", err.Error()}, 406)
 		return
 	}
 
 	packages[pkg.Name] = append(packages[pkg.Name], pkg)
-	writeResponseJSON(res, json, 200)
+	writeResponseJSON(res, req, pkg, 200)
 }
 
 func GetPkg(res http.ResponseWriter, req *http.Request) {
 	params := req.URL.Query()
 	var name string
 
-	if name = params.Get("pkgname"); name == "" {
-		http.NotFound(res, req)
+	if name = params.Get("pkgname"); name == "" ||
+		len(packages[name]) < 1 {
+		writeResponseJSON(res, req, ResponseMsg{fmt.Sprintf("No packages found called `%v`", name), ""}, 404)
 		return
 	}
 
-	pkgs := packages[name]
+	v := Version{}
+	v.Set(params.Get("version"))
 
-	if len(pkgs) >= 1 {
-		v := Version{}
-		v.Set(params.Get("version"))
-
-		for _, p := range pkgs {
-			if p.Version.Major == v.Major &&
-				p.Version.Minor == v.Minor {
-
-				json, err := json.Marshal(p)
-				if err != nil {
-					log.Printf("Could not unmarshal package properly")
-					http.NotFound(res, req)
-					return
-				}
-
-				writeResponseJSON(res, json, 200)
-			}
+	for _, p := range packages[name] {
+		if p.Version.Major == v.Major &&
+			p.Version.Minor == v.Minor {
+			writeResponseJSON(res, req, p, 200)
+			return
 		}
-	} else {
-		http.NotFound(res, req)
-		return
 	}
+
 }
