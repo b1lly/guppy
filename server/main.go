@@ -6,51 +6,11 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strconv"
-	"strings"
+
+	"github.com/b1lly/guppy"
 )
 
-type Package struct {
-	Name       string
-	Version    Version
-	Remote     string
-	CommitHash string
-}
-
-type Version struct {
-	Major int
-	Minor int
-	Patch int
-}
-
-// Set will take a string representation of versions and convert it to
-// a Version struct. It fills in empty fields with the value of 0
-func (v *Version) Set(version string) *Version {
-	segments := strings.Split(version, ".")
-	if len(segments) == 0 {
-		return &Version{0, 0, 0}
-	}
-
-	// Convert our string to integers for storage
-	var vers []int
-	for _, seg := range segments {
-		i, err := strconv.Atoi(seg)
-		if err != nil {
-			vers = append(vers, 0)
-			continue
-		}
-		vers = append(vers, i)
-	}
-
-	// Fill in remaining version fields with 0 (if necessary)
-	for i := len(vers); i < 4; i++ {
-		vers = append(vers, 0)
-	}
-
-	return &Version{vers[0], vers[1], vers[2]}
-}
-
-var packages = make(map[string][]*Package)
+var packages = make(map[string][]*guppy.Package)
 
 func main() {
 	http.HandleFunc("/register", RegisterPkg)
@@ -60,7 +20,7 @@ func main() {
 		log.Fatal("ListenAndServ: ", err)
 	}
 
-	log.Printf("Listening on 1337...")
+	log.Printf("Listening on 13379...")
 }
 
 func writeResponseJSON(res http.ResponseWriter, req *http.Request, msg interface{}, statusCode int) {
@@ -76,10 +36,10 @@ func writeResponseJSON(res http.ResponseWriter, req *http.Request, msg interface
 	res.Write(json)
 }
 
-func validatePkg(params url.Values) (*Package, error) {
+func validatePkg(params url.Values) (*guppy.Package, error) {
 	var (
 		name    string
-		version Version
+		version guppy.Version
 		remote  string
 		hash    string
 	)
@@ -88,7 +48,7 @@ func validatePkg(params url.Values) (*Package, error) {
 		return nil, fmt.Errorf("no package name provided in request")
 	}
 
-	version = Version{}
+	version = guppy.Version{}
 	version.Set(params.Get("version"))
 
 	if remote = params.Get("remote"); remote == "" {
@@ -99,14 +59,17 @@ func validatePkg(params url.Values) (*Package, error) {
 		return nil, fmt.Errorf("no hash provided")
 	}
 
-	return &Package{name, version, remote, hash}, nil
+	return &guppy.Package{name, version, remote, hash}, nil
 }
 
+// ResponseMsg is used to send a structured JSON response with an error
+// back to the request
 type ResponseMsg struct {
 	Msg      string
 	ErrorMsg string
 }
 
+// RegisterPkg is used to register a new package with the remote server
 func RegisterPkg(res http.ResponseWriter, req *http.Request) {
 	pkg, err := validatePkg(req.URL.Query())
 	if err != nil {
@@ -118,6 +81,7 @@ func RegisterPkg(res http.ResponseWriter, req *http.Request) {
 	writeResponseJSON(res, req, pkg, 200)
 }
 
+// GetPkg will look up a specified package and return it back to the request as JSON
 func GetPkg(res http.ResponseWriter, req *http.Request) {
 	params := req.URL.Query()
 	var name string
@@ -128,7 +92,7 @@ func GetPkg(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	v := Version{}
+	v := guppy.Version{}
 	v.Set(params.Get("version"))
 
 	for _, p := range packages[name] {
@@ -138,5 +102,4 @@ func GetPkg(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
-
 }
