@@ -15,19 +15,11 @@ func (e PackageError) Error() string {
 }
 
 type Package struct {
-	Id int
+	Id int64
 	Name       string
 	Version    *Version
 	Remote     string
 	CommitHash string
-}
-
-func (p *Package) Save() {
-	// Save to Database
-}
-
-func (p *Package) Delete() {
-	// Delete from db and memory cache
 }
 
 func NewPackage(name, version, remote, hash string) (*Package, error) {
@@ -42,6 +34,8 @@ func NewPackage(name, version, remote, hash string) (*Package, error) {
 	if hash == "" {
 		return nil, PackageError{"no commit hash provided"}
 	}
+
+	// TODO(billy) Validate that repository & commit hash exist
 
 	return &Package{0, name, NewVersion(version), remote, hash}, nil
 }

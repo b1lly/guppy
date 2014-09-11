@@ -9,14 +9,20 @@ import (
 	"github.com/b1lly/guppy"
 )
 
-var registry = NewRegistry()
+var registry *Registry
 
 func main() {
 	initDB()
 
+	registry = NewRegistry()
+	err := registry.Sync()
+	if err != nil {
+		log.Fatal("Could not sync with database", err)
+	}
+
 	http.HandleFunc("/register", RegisterPkg)
 	http.HandleFunc("/get", GetPkg)
-	err := http.ListenAndServe(":13379", nil)
+	err = http.ListenAndServe(":13379", nil)
 	if err != nil {
 		log.Fatal("ListenAndServ: ", err)
 	}
