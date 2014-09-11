@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// PackageError is used to send clean error messages back to the client via API requests
 type PackageError struct {
 	Msg string
 }
@@ -14,6 +15,7 @@ func (e PackageError) Error() string {
 	return fmt.Sprintf("%v", e.Msg)
 }
 
+// Package represents a package that can be added or retrieved from the registry
 type Package struct {
 	Id int64
 	Name       string
@@ -22,6 +24,8 @@ type Package struct {
 	CommitHash string
 }
 
+// NewPackage will create, and validate a constructed package
+// It will check to make sure the remote and hash exist before constructing it
 func NewPackage(name, version, remote, hash string) (*Package, error) {
 	if name == "" {
 		return nil, PackageError{"no package name provided"}
@@ -40,6 +44,7 @@ func NewPackage(name, version, remote, hash string) (*Package, error) {
 	return &Package{0, name, NewVersion(version), remote, hash}, nil
 }
 
+// Version is a representation of Symantic versioning
 type Version struct {
 	Major int
 	Minor int
@@ -50,6 +55,8 @@ func (v *Version) String() string {
 	return fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch)
 }
 
+// Scan lets Version implement the Scanner interface to allow database response
+// data into the proper structured
 func (v *Version) Scan(val interface{}) error {
 	*v = *NewVersion(string(val.([]uint8)))
 	return nil

@@ -8,15 +8,15 @@ import (
 
 var pkgsSelectQuery = "SELECT Name, Remote, CommitHash, Version FROM guppy.packages"
 
-func AllPackages() ([]*guppy.Package, error) {
-	return SelectPackages(pkgsSelectQuery)
+func allPackages() ([]*guppy.Package, error) {
+	return selectPackages(pkgsSelectQuery)
 }
 
-func PackagesByName(name string) ([]*guppy.Package, error) {
-	return SelectPackages(fmt.Sprintf("%v WHERE Name='%v'", pkgsSelectQuery, name))
+func packagesByName(name string) ([]*guppy.Package, error) {
+	return selectPackages(fmt.Sprintf("%v WHERE Name='%v'", pkgsSelectQuery, name))
 }
 
-func SelectPackages(query string) ([]*guppy.Package, error) {
+func selectPackages(query string) ([]*guppy.Package, error) {
 	rows, err := DB.Query(query)
 	defer rows.Close()
 	if err != nil {
@@ -34,7 +34,7 @@ func SelectPackages(query string) ([]*guppy.Package, error) {
 	return packages, err
 }
 
-func InsertPackage(pkg *guppy.Package) error {
+func insertPackage(pkg *guppy.Package) error {
 	query := `
 		INSERT INTO guppy.packages (Name, Remote, CommitHash, Version)
 		VALUES ('%v', '%v', '%v', '%v')

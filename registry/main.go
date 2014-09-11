@@ -15,9 +15,9 @@ func main() {
 	initDB()
 
 	registry = NewRegistry()
-	err := registry.Sync()
+	err := registry.Load()
 	if err != nil {
-		log.Fatal("Could not sync with database", err)
+		log.Fatal("Could not load the registry properly from the database", err)
 	}
 
 	http.HandleFunc("/register", RegisterPkg)
@@ -74,7 +74,7 @@ func GetPkg(res http.ResponseWriter, req *http.Request) {
 	}
 
 	version := guppy.NewVersion(params.Get("version"))
-	pkg := registry.GetByNameAndVersion(name, version)
+	pkg := registry.PackageByNameAndVersion(name, version)
 	if pkg != nil {
 		writeResponseJSON(res, req, pkg, 201)
 		return
