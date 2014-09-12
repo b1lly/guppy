@@ -22,12 +22,9 @@ func main() {
 
 	http.HandleFunc("/register", RegisterPkg)
 	http.HandleFunc("/get", GetPkg)
-	err = http.ListenAndServe(":13379", nil)
-	if err != nil {
-		log.Fatal("ListenAndServ: ", err)
-	}
 
 	log.Printf("Listening on 13379...")
+	log.Fatal("ListenAndServ: ", http.ListenAndServe(":13379", nil))
 }
 
 func writeResponseJSON(res http.ResponseWriter, req *http.Request, msg interface{}, statusCode int) {
