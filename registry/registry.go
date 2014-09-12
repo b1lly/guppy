@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/b1lly/guppy"
+	"log"
 )
 
 type Registry struct {
@@ -40,7 +41,7 @@ func (r *Registry) Add(pkg *guppy.Package) error {
 
 	err := r.SavePkg(pkg)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("There was an error saving the package to registry, err: ", err)
 		return guppy.PackageError{"There was a problem saving package to registry, please try again."}
 	}
 
@@ -71,12 +72,8 @@ func (r *Registry) PackagesByName(pkgName string) ([]*guppy.Package, bool) {
 
 // PackageByNameAndVersion will look into the cache for a particular package name/version
 func (r *Registry) PackageByNameAndVersion(name string, version *guppy.Version) *guppy.Package {
-	var (
-		pkgs []*guppy.Package
-		ok   bool
-	)
-
-	if pkgs, ok = r.PackagesByName(name); !ok {
+	pkgs, ok := r.PackagesByName(name)
+	if !ok {
 		return nil
 	}
 
