@@ -40,6 +40,7 @@ func NewPackage(name, version, remote, hash string) (*Package, error) {
 	}
 
 	// TODO(billy) Validate that repository & commit hash exist
+	// Specify protocol (local [file://], [ssh://, user@server] private, [git://] public)
 
 	return &Package{0, name, NewVersion(version), remote, hash}, nil
 }

@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	// DB holds the Guppy database.
+	// DB  holds the Guppy database.
 	DB *sql.DB
 )
 

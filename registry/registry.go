@@ -23,7 +23,7 @@ func (r *Registry) Load() error {
 		return err
 	}
 
-	// Empty our registry and update it with the results from the database
+	// Empty our cache and update it with the results from the database
 	r.Packages = make(map[string][]*guppy.Package)
 	for _, pkg := range pkgs {
 		r.Packages[pkg.Name] = append(r.Packages[pkg.Name], pkg)
@@ -38,6 +38,8 @@ func (r *Registry) Add(pkg *guppy.Package) error {
 	if existingPkg != nil {
 		return guppy.PackageError{fmt.Sprintf("Package %s already exists", pkg.Name)}
 	}
+
+	// TODO(billy) verify that the package remote exists
 
 	err := r.SavePkg(pkg)
 	if err != nil {
