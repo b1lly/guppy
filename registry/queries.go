@@ -25,7 +25,6 @@ func selectPackages(query string) ([]*guppy.Package, error) {
 
 	var packages []*guppy.Package
 	for rows.Next() {
-		fmt.Println("sf")
 		pkg := guppy.Package{}
 
 		err = rows.Scan(&pkg.Name, &pkg.Remote, &pkg.CommitHash, &pkg.Version)
