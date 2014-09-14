@@ -8,18 +8,23 @@ const (
 
 var (
 	guppyCfg = NewGuppyConfig()
-	commands = map[string]func(args []string) error{
-		"install":  Install,
-		"register": Register,
-		"add":      Add,
-	}
-	glog = GuppyLog{}
+	glog     = GuppyLog{}
 )
 
 func main() {
-	// cmd line interface
 	flag.Parse()
 	args := flag.Args()
+
+	project, err := NewProject()
+	if err != nil {
+		glog.Println(err)
+		return
+	}
+
+	commands := map[string]func(args []string) error{
+		"install":  project.Install,
+		"register": project.Register,
+	}
 
 	if len(args) <= 0 {
 		glog.Println("commands: install, register, add")
@@ -36,30 +41,5 @@ func main() {
 		return
 	}
 
-	cmd([]string{})
-}
-
-func Install(args []string) error {
-	// - look for local gup.json package requirement
-	// - convert deps into request
-	// - send get request to registry server
-	// - use response remote/commit hash to run a git clone to destination dir (perhaps use .gup.conf)
-
-	return nil
-}
-
-func Register(args []string) error {
-	// - look for local gup.json setting
-	// - convert settings into request
-	// - confirm remote pkg repo exists
-	// - send register request to gup registry server
-	return nil
-}
-
-func Add(args []string) error {
-	// - convert [pkg] to get request
-	// - send get request to registry server
-	// - use response remote/commit hash to run a git clone to destination dir
-	// - add pkg to gup.json dependencies
-	return nil
+	cmd(args[1:])
 }

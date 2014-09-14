@@ -1,14 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/user"
-	"path"
-
-	"github.com/imdario/mergo"
 )
 
 // GuppyConfig is used to tell guppy how to handle packages.
@@ -59,23 +54,7 @@ func NewGuppyConfig() *GuppyConfig {
 }
 
 func (gc *GuppyConfig) load(cfgPath string) error {
-	cfg, err := ioutil.ReadFile(path.Join(cfgPath, guppyFile))
-	if err != nil || cfg == nil {
-		return err
-	}
-
-	var fileConfig *GuppyConfig
-	err = json.Unmarshal(cfg, &fileConfig)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	if err = mergo.Merge(gc, *fileConfig); err != nil {
-		return err
-	}
-
-	return nil
+	return unmarshalJSONFile(cfgPath, guppyFile, &gc)
 }
 
 func (gc *GuppyConfig) Save() error {

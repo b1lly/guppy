@@ -17,9 +17,9 @@ func (e PackageError) Error() string {
 
 // Package represents a package that can be added or retrieved from the registry
 type Package struct {
-	Id int64
+	Id         int64
 	Name       string
-	Version    *Version
+	Version    *Version `json:"-"`
 	Remote     string
 	CommitHash string
 }
