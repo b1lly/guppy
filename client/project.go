@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/b1lly/guppy"
@@ -30,21 +29,19 @@ func NewProject() (*Project, error) {
 }
 
 func (p *Project) Install(args []string) error {
-	// Iterate through deps
-	// Convert dep into request
-	// Fetch package data from registry
-	// Unmarshal reseponse into a guppy meta package
-	// Git clone repo from meta guppy meta package (target=GuppyConfig.Cwd + GuppyConfig.Directory)
-	// Do next
-
 	if len(args) == 1 {
+		// Convert dep into request
 		// Fetch single package
 		// Check for "-save" flag to add to package dep
 		return nil
 	}
 
 	for _, deps := range p.Deps {
-		fmt.Println(deps)
+		// Convert dep into request
+		// Fetch package data from registry
+		// Unmarshal reseponse into a guppy meta package
+		// Git clone repo from meta guppy meta package (target=GuppyConfig.Cwd + GuppyConfig.Directory)
+		// Do next
 	}
 
 	return nil

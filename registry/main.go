@@ -17,11 +17,11 @@ func main() {
 	registry = NewRegistry()
 	err := registry.Load()
 	if err != nil {
-		log.Fatal("Could not load the registry properly from the database", err)
+		log.Fatal("Could not load the registry properly from the database. ", err)
 	}
 
 	http.HandleFunc("/register", RegisterPkg)
-	http.HandleFunc("/get", GetPkg)
+	http.HandleFunc("/search", SearchPkg)
 
 	log.Printf("Listening on 13379...")
 	log.Fatal("ListenAndServ: ", http.ListenAndServe(":13379", nil))
@@ -60,8 +60,8 @@ func RegisterPkg(res http.ResponseWriter, req *http.Request) {
 	writeResponseJSON(res, req, pkg, 200)
 }
 
-// GetPkg will look up a specified package and return it back to the request as JSON
-func GetPkg(res http.ResponseWriter, req *http.Request) {
+// SearchPkg will look up a specified package and return it back to the request as JSON
+func SearchPkg(res http.ResponseWriter, req *http.Request) {
 	params := req.URL.Query()
 	var name string
 

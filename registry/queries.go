@@ -18,17 +18,22 @@ func packagesByName(name string) ([]*guppy.Package, error) {
 
 func selectPackages(query string) ([]*guppy.Package, error) {
 	rows, err := DB.Query(query)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var packages []*guppy.Package
 	for rows.Next() {
+		fmt.Println("sf")
 		pkg := guppy.Package{}
 
 		err = rows.Scan(&pkg.Name, &pkg.Remote, &pkg.CommitHash, &pkg.Version)
 		packages = append(packages, &pkg)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return packages, err
