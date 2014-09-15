@@ -17,7 +17,7 @@ func main() {
 
 	project, err := NewProject()
 	if err != nil {
-		glog.Println(err)
+		glog.Error(err)
 		return
 	}
 
@@ -27,7 +27,7 @@ func main() {
 	}
 
 	if len(args) <= 0 {
-		glog.Println("commands: install, register, add")
+		glog.Error("commands: install, register, add")
 		return
 	}
 
@@ -37,7 +37,7 @@ func main() {
 	)
 
 	if cmd, ok = commands[args[0]]; !ok {
-		glog.Println("...list help...")
+		glog.Error("...list help...")
 		return
 	}
 

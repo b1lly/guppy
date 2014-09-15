@@ -1,12 +1,17 @@
 package main
 
-import (
-	"fmt"
-	"log"
-)
+import "log"
 
 type GuppyLog struct{}
 
-func (gl *GuppyLog) Println(v interface{}) {
-	log.Println(fmt.Sprintf("[guppy] %v", v))
+func (gl *GuppyLog) Error(v ...interface{}) {
+	log.Println("[guppy]", v)
+}
+
+func (gl *GuppyLog) Info(v ...interface{}) {
+	log.Println("[guppy]", v)
+}
+
+func (gl *GuppyLog) Warning(v ...interface{}) {
+	log.Println("[guppy]", v)
 }

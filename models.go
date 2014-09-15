@@ -1,6 +1,7 @@
 package guppy
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -43,6 +44,12 @@ func NewPackage(name, version, remote, hash string) (*Package, error) {
 	// Specify protocol (local [file://], [ssh://, user@server] private, [git://] public)
 
 	return &Package{0, name, NewVersion(version), remote, hash}, nil
+}
+
+func NewPackageFromJSON(data []byte) (*Package, error) {
+	var pkg *Package
+	err := json.Unmarshal(data, &pkg)
+	return pkg, err
 }
 
 // Version is a representation of Symantic versioning

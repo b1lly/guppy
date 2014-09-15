@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/user"
+
+	_ "github.com/yext/glog"
 )
 
 // GuppyConfig is used to tell guppy how to handle packages.
@@ -39,14 +40,14 @@ func NewGuppyConfig() *GuppyConfig {
 		err = gc.load(user.HomeDir)
 
 		if err != nil {
-			glog.Println(fmt.Sprintf("Failed to load guppy root config `%v`", err))
+			glog.Error("Failed to load guppy root config:", err)
 		}
 	}
 
 	if cwd != user.HomeDir {
 		err = gc.load(cwd)
 		if err != nil {
-			glog.Println(fmt.Sprintf("Failed to load guppy project config `%v`", err))
+			glog.Error("Failed to load guppy project config:", err)
 		}
 	}
 

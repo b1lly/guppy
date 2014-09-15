@@ -1,9 +1,16 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/b1lly/guppy"
+	_ "github.com/yext/glog"
 )
 
 const (
@@ -36,9 +43,47 @@ func (p *Project) Install(args []string) error {
 		return nil
 	}
 
-	for _, deps := range p.Deps {
-		// Convert dep into request
-		// Fetch package data from registry
+	// Install the main package
+	for _, dep := range p.Deps {
+		var segs = make([]string, 3)
+		segs = strings.Split(dep, "#")
+
+		if segs[1] == "private" {
+			segs[1] = ""
+			segs[2] = "private"
+		}
+
+		isPrivate, err := strconv.ParseBool(segs[2])
+		if err != nil {
+			isPrivate = false
+		}
+
+		resp, err := http.Get(searchRegistryUrl(segs[0], segs[1], isPrivate))
+		if err != nil {
+			glog.Info("Could not fetch package information:", err)
+			continue
+		}
+
+		bytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			glog.Info("Failed to get package information: ", err)
+			continue
+		}
+		resp.Body.Close()
+
+		if resp.StatusCode != 200 {
+			glog.Info("Failed to fetch package", string(bytes))
+			continue
+		}
+
+		pkg, err := guppy.NewPackageFromJSON(bytes)
+		if err != nil {
+			glog.Info(err)
+			continue
+		}
+
+		glog.Info(pkg)
+
 		// Unmarshal reseponse into a guppy meta package
 		// Git clone repo from meta guppy meta package (target=GuppyConfig.Cwd + GuppyConfig.Directory)
 		// Do next
@@ -58,6 +103,19 @@ func (p *Project) Save() {
 	// Write state to disc
 }
 
-func remoteURL(pkgName string, version string) {
-	// Create URL for Deps (e.g. common#1.0.0 => git@x.xx.x.x/storm-common)
+func searchRegistryUrl(pkgName string, version string, private bool) string {
+	var registry string
+	switch private {
+	case true:
+		registry = guppyCfg.RegistryPrivate
+	case false:
+		registry = guppyCfg.RegistryPublic
+	}
+
+	params := url.Values{}
+	params.Add("pkgname", pkgName)
+	params.Add("version", version)
+
+	// e.g. common#1.0.0 => localhost/storm-common
+	return fmt.Sprintf("http://%s/search?%s", registry, params.Encode())
 }

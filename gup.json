@@ -6,7 +6,7 @@
 	"templates": "./views",
 	"stylesheets": "/stylesheets",
 	"deps": [
-		"storm#1.0.0"
+		"storm#1.0.0#private"
 	],
 	"remote": "github.com/b1lly/guppy.git"
 }
